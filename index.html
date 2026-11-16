@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10112e"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon.svg">
+<title>Simulador Custodia de Expedientes</title>
+<style>:root{--bg:#10112e;--card:#1c1d45;--card2:#262861;--tx:#eef0ff;--mut:#9a9dc8;--bd:#34377a;--ac:#ff3d71;--ac2:#7b5cff;--cy:#00d4ff;--ok:#4be3a1;--ko:#ff6b7d;--okbg:#12362f;--kobg:#40182b;--warn:#ffd27a;--warnbg:#3a3115;--acfg:#fff;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;color:var(--tx);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:radial-gradient(120% 50% at 50% -8%,#0a6bd6 0%,transparent 62%),var(--bg);min-height:100vh;padding:env(safe-area-inset-top,0) max(14px,env(safe-area-inset-right,0)) 0 max(14px,env(safe-area-inset-left,0))}
+.wrap{max-width:560px;margin:0 auto;padding:14px 0 calc(86px + env(safe-area-inset-bottom,0))}
+.top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.logo{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--ac),#c2185b);display:grid;place-items:center;font-weight:800}
+.top h1{font-size:1.02rem;margin:0;line-height:1.2}.top small{color:var(--mut);display:block;font-size:.74rem}
+.card{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 8px 24px #0006,inset 0 1px 0 #ffffff10}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:linear-gradient(160deg,var(--card2),var(--card));border:1px solid var(--bd);border-radius:14px;padding:10px}
+.stat b{display:block;font-size:1.35rem}.stat span{color:var(--mut);font-size:.72rem}
+.pill{float:right;background:linear-gradient(90deg,var(--cy),#0a8cff);color:#001;font-size:.68rem;font-weight:700;border-radius:10px;padding:1px 8px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gz{text-align:center;position:relative}.gz svg{width:100%;max-width:150px}.gv{font-size:1.4rem;font-weight:800;margin-top:-30px}.gl{color:var(--mut);font-size:.76rem}
+.sub{color:var(--mut);font-size:.86rem;margin-bottom:10px}
+h2{font-size:.95rem;margin:0 0 8px}
+button{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--bd);background:var(--card2);color:var(--tx);padding:11px 14px}
+button.p{background:linear-gradient(90deg,var(--ac),#c2185b);border-color:transparent;color:var(--acfg);font-weight:600}
+button.c{background:linear-gradient(90deg,var(--ac2),var(--cy));border-color:transparent;color:#fff;font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--cy);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.row>*{min-width:0}
+.row.f>*{flex:1 1 140px}
+.opt{display:block;width:100%;text-align:left;margin:7px 0;padding:13px}
+.opt.sel{border-color:var(--cy);box-shadow:0 0 0 2px var(--cy) inset}
+.opt.ok{background:var(--okbg);border-color:var(--ok)}.opt.ko{background:var(--kobg);border-color:var(--ko)}
+.bar{height:7px;background:#ffffff18;border-radius:4px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2))}
+.pb{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:.8rem}.pb em{flex:0 0 96px;font-style:normal;color:var(--mut)}.pb .bar{flex:1;margin:0}.pb b{width:38px;text-align:right}
+.meta{display:flex;justify-content:space-between;color:var(--mut);font-size:.82rem;gap:8px;flex-wrap:wrap}
+.exp{margin-top:10px;padding:10px;border-radius:10px;background:#0003;font-size:.9rem;overflow-wrap:anywhere}
+.big{font-size:2rem;font-weight:800}
+.tag{display:inline-block;font-size:.7rem;padding:1px 8px;border-radius:10px;border:1px solid var(--bd);color:var(--mut)}
+textarea,input[type=text],input[type=url],input[type=password]{width:100%;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;background:#0004;color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:10px}
+textarea{min-height:110px}
+select{font:inherit;padding:10px;border-radius:10px;border:1px solid var(--bd);background:var(--card2);color:var(--tx);max-width:100%;width:100%}
+label{display:block;font-size:.84rem;color:var(--mut)}label.chk{display:flex;gap:6px;align-items:center;margin:4px 0}
+.rev{border-left:4px solid var(--bd);padding-left:10px;margin:14px 0}.rev.ok{border-color:var(--ok)}.rev.ko{border-color:var(--ko)}
+.src{color:var(--mut);font-size:.8rem;margin-top:4px}a{color:var(--cy)}
+.warn{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:8px 10px;font-size:.84rem;margin-top:8px}
+details{margin:6px 0}summary{cursor:pointer;font-weight:600}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;gap:0;background:#0c0d26ee;backdrop-filter:blur(10px);border-top:1px solid var(--bd);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0));z-index:5}
+nav button{flex:1;max-width:130px;background:none;border:0;color:var(--mut);font-size:.7rem;padding:6px 2px;border-radius:10px}
+nav button i{display:block;font-style:normal;font-size:1.25rem}nav button.on{color:var(--cy);background:#ffffff10}
+</style></head><body>
+<main class="wrap" id="app"></main>
+<nav id="nav"><button data-t="home" class="on"><i>◔</i>Inicio</button><button data-t="practica"><i>✎</i>Practicar</button><button data-t="entrevista"><i>🎤</i>Entrevista</button><button data-t="ia"><i>✦</i>IA</button></nav>
+<script>
+var BLOQUES={A:"Funciones del puesto",B:"Ética de la función pública",C:"Poder Judicial y Constitución",D:"Gestión pública y normas administrativas",E:"Ofimática y seguridad de la información"};
+var BASE=[
+{b:"A",q:"Una función del Asistente de Custodia respecto de las audiencias es:",o:["Dirigir la audiencia.","Recibir y almacenar ordenadamente los CDs y copias de seguridad de audio y video.","Redactar sentencias.","Notificar resoluciones a las partes."],c:1,e:"Según las funciones del puesto, recibe y almacena en forma ordenada los CDs y copias de seguridad del audio, video y cualquier registro de audiencias."},
+{b:"A",q:"Cuando un juez solicita un CD de audiencia, el asistente debe:",o:["Entregarlo sin registro.","Pedirle que lo recoja otro día sin dejar constancia.","Registrar, en medio manual o informático, la fecha de préstamo y de devolución.","Entregar el original y destruir la copia."],c:2,e:"Función del puesto: prestar CDs y expedientes a jueces y auxiliares registrando fecha de préstamo y devolución."},
+{b:"A",q:"Pueden solicitar la lectura de expedientes, conforme corresponda:",o:["Fiscales, abogados, procuradores, imputados y agraviados.","Cualquier persona sin identificación.","Solo los jueces.","Solo el personal administrativo."],c:0,e:"El puesto atiende requerimientos de lectura de Fiscales, Abogados, Procuradores, imputados o agraviados, etc."},
+{b:"A",q:"Respecto de los CDs de audiencias y los expedientes, el asistente debe:",o:["Permitir el ingreso libre al área.","Dejarlos sobre el escritorio.","Prestarlos sin registro.","Mantenerlos bajo resguardo y verificar permanentemente su seguridad."],c:3,e:"Función: verificar la permanente seguridad de los CDs de audiencias y expedientes judiciales."},
+{b:"A",q:"Si un CD de audiencia presenta deterioro físico, lo correcto es:",o:["Desecharlo.","Preservar la información (por ejemplo, con la copia de seguridad) y comunicar la incidencia.","Entregarlo así a la parte.","Esperar a que deje de reproducirse."],c:1,e:"Se preserva la información con las copias de seguridad y se informa la incidencia para su control."},
+{b:"A",q:"Antes de una audiencia, el equipo de grabación no funciona. El asistente, como soporte técnico, debe:",o:["Verificar lo básico (energía, cables, dispositivos de entrada) y, si persiste, escalar al área de soporte informático.","Cancelar la audiencia por su cuenta.","Grabar con su celular personal.","Ignorar el problema."],c:0,e:"La misión del puesto incluye dar soporte técnico a usuarios en equipos de audio y video; se diagnostica lo básico y se escala."},
+{b:"A",q:"El registro de préstamos sirve principalmente para:",o:["Modificar el contenido del expediente.","Evitar la atención al público.","Eliminar documentos antiguos.","Conocer la ubicación y el responsable del documento (trazabilidad)."],c:3,e:"Permite controlar quién tiene el documento y su circulación."},
+{b:"A",q:"Una persona pide leer un expediente sin acreditar su identidad ni su condición de parte o abogado. El asistente debe:",o:["Entregarlo para no demorar.","Negarse y no orientarla.","Solicitar identificación y verificar su legitimación antes de permitir la lectura.","Derivarla a cualquier otro servidor."],c:2,e:"Se controla el acceso conforme al procedimiento: identificar y verificar condición antes de la lectura."},
+{b:"B",q:"Según la Ley 27815 (Código de Ética de la Función Pública), es un deber del servidor público:",o:["Obtener ventajas indebidas.","Discreción.","Presionar o amenazar.","Hacer proselitismo político."],c:1,e:"Deberes (art. 7): neutralidad, transparencia, discreción, ejercicio adecuado del cargo, uso adecuado de los bienes del Estado y responsabilidad. Las otras son prohibiciones (art. 8).",n:"Ojo: algunos solucionarios antiguos marcan la discreción como 'no deber'; el texto de la ley la incluye."},
+{b:"B",q:"Es una prohibición ética:",o:["Neutralidad.","Transparencia.","Responsabilidad.","Obtener ventajas indebidas."],c:3,e:"Prohibiciones (art. 8): mantener intereses de conflicto, obtener ventajas indebidas, hacer proselitismo político, hacer mal uso de información privilegiada, presionar, amenazar y/o acosar."},
+{b:"B",q:"El principio de probidad consiste en:",o:["Actuar con rectitud, honradez y honestidad, procurando el interés general y desechando todo provecho personal.","Obedecer sin cuestionar.","Guardar reserva de la información.","Capacitarse permanentemente."],c:0,e:"Probidad: rectitud, honradez y honestidad, interés general, sin provecho o ventaja personal. Capacitarse es idoneidad; reservar es discreción."},
+{b:"B",q:"Un servidor usa el equipo institucional para fines personales. Vulnera el deber de:",o:["Neutralidad.","Transparencia.","Uso adecuado de los bienes del Estado.","Discreción."],c:2,e:"Debe proteger y conservar los bienes del Estado y utilizarlos para los fines institucionales."},
+{b:"B",q:"Para el Código de Ética, servidor público es:",o:["Solo quien tiene nombramiento.","Solo el funcionario de confianza.","Solo quien está en el D. Leg. 276.","Todo aquel que mantiene vínculo laboral o contractual de cualquier naturaleza con una entidad de la Administración Pública y ejerce funciones en ella."],c:3,e:"La definición es amplia: abarca cualquier régimen o vínculo (art. 4)."},
+{b:"B",q:"El principio de veracidad implica:",o:["Priorizar el interés personal.","Expresarse con autenticidad ante la institución y la ciudadanía, y contribuir al esclarecimiento de los hechos.","Callar los errores.","Obtener ventajas."],c:1,e:"Veracidad: autenticidad en las relaciones funcionales y contribución al esclarecimiento de los hechos."},
+{b:"C",q:"Según el art. 138 de la Constitución, la potestad de administrar justicia emana del pueblo y se ejerce por:",o:["El Poder Judicial.","El Congreso.","El Poder Ejecutivo.","El Ministerio Público."],c:0,e:"Constitución, art. 138: se ejerce por el Poder Judicial a través de sus órganos jerárquicos."},
+{b:"C",q:"El máximo órgano de deliberación del Poder Judicial es:",o:["El Consejo Ejecutivo.","La Presidencia de la Corte Suprema.","La Sala Plena de la Corte Suprema.","La Junta Nacional de Justicia."],c:2,e:"TUO de la LOPJ: la Sala Plena de la Corte Suprema es el máximo órgano de deliberación del Poder Judicial.",n:"Verifica el artículo exacto en tu copia del TUO de la LOPJ."},
+{b:"C",q:"En un proceso civil, la resolución que no requiere la firma del juez (la suscribe el auxiliar jurisdiccional) es:",o:["La sentencia.","El decreto.","El auto.","Ninguna."],c:1,e:"CPC: los decretos son expedidos y suscritos por el auxiliar jurisdiccional; autos y sentencias los suscribe el juez.",n:"Verifica en el CPC (art. 122)."},
+{b:"C",q:"La Nueva Ley Procesal del Trabajo es la Ley:",o:["27497.","26636.","30057.","29497."],c:3,e:"La NLPT es la Ley 29497 (oralidad). La Ley 26636 fue la anterior Ley Procesal del Trabajo; la 30057 es la Ley del Servicio Civil.",n:"En el aviso de convocatoria figura 'Ley N°27497', probablemente un error de tipeo. Confírmalo en los textos oficiales."},
+{b:"C",q:"El principio que exige que las resoluciones judiciales expresen sus fundamentos es:",o:["Publicidad.","Cosa juzgada.","Motivación escrita de las resoluciones.","Pluralidad de instancia."],c:2,e:"Constitución, art. 139 inc. 5: motivación escrita de las resoluciones judiciales en todas las instancias."},
+{b:"D",q:"Plazo para atender una solicitud de acceso a la información pública (Ley 27806):",o:["Diez días hábiles.","Quince días calendario.","Cinco días hábiles.","Treinta días."],c:0,e:"Diez días hábiles, prorrogables por cinco días hábiles más en casos excepcionales y justificados."},
+{b:"D",q:"El principio por el cual las autoridades administrativas actúan con respeto a la Constitución, la ley y el derecho es:",o:["Informalismo.","Legalidad.","Celeridad.","Predictibilidad."],c:1,e:"TUO de la Ley 27444 (D.S. 004-2019-JUS), art. IV: principio de legalidad.",n:"Una búsqueda mostró un TUO más reciente (D.S. 006-2026-JUS). Confirma cuál rige antes del examen."},
+{b:"D",q:"El ente rector del Sistema Administrativo de Gestión de Recursos Humanos es:",o:["El MEF.","La PCM.","SERVIR.","La Contraloría."],c:2,e:"SERVIR, Autoridad Nacional del Servicio Civil (Ley 30057)."},
+{b:"D",q:"La ley que protege los datos personales es:",o:["Ley 27444.","Ley 27806.","Ley 30057.","Ley 29733."],c:3,e:"Ley 29733, Ley de Protección de Datos Personales. Importante en la custodia de expedientes."},
+{b:"E",q:"En Excel, para contar celdas que cumplen un criterio se usa:",o:["CONTAR.SI","SUMAR","BUSCARV","CONCATENAR"],c:0,e:"CONTAR.SI cuenta las celdas de un rango que cumplen una condición."},
+{b:"E",q:"Para resumir grandes volúmenes de datos y reagruparlos se usa:",o:["Autorrelleno.","Tabla dinámica.","Combinar celdas.","Vista previa."],c:1,e:"La tabla dinámica resume, agrupa y cruza datos."},
+{b:"E",q:"Los tres pilares de la seguridad de la información son:",o:["Rapidez, costo y estética.","Acceso, registro y borrado.","Copia, pegado y corte.","Confidencialidad, integridad y disponibilidad."],c:3,e:"Tríada CID, base de la NTP-ISO/IEC 27001."},
+{b:"E",q:"La regla de respaldo 3-2-1 significa:",o:["3 usuarios, 2 claves, 1 equipo.","3 horas, 2 días, 1 semana.","3 copias de los datos, en 2 tipos de medio, con 1 copia fuera de la sede.","3 servidores, 2 discos, 1 CD."],c:2,e:"Buena práctica de copias de seguridad de las grabaciones."},
+{b:"E",q:"La capacidad aproximada de un CD-R estándar es:",o:["700 MB.","4,7 GB.","25 GB.","1 TB."],c:0,e:"CD-R estándar: unos 700 MB (80 min de audio). DVD de una capa: 4,7 GB."},
+{b:"E",q:"Formato de audio con compresión con pérdida:",o:["WAV.","MP3.","FLAC.","PCM."],c:1,e:"MP3 descarta información. WAV y PCM no comprimen; FLAC comprime sin pérdida."},
+{b:"E",q:"Para comprobar que un archivo de grabación no fue alterado se usa:",o:["Cambiarle el nombre.","Moverlo a otra carpeta.","Comprimirlo.","Calcular y comparar su hash (por ejemplo, SHA-256)."],c:3,e:"Un hash distinto indica que el contenido cambió: control de integridad."}
+];
+
+// Preguntas de exámenes anteriores (tu .txt, con clave) y temas del examen PDF (sin clave: solo guía de estilo para la IA).
+var PREV=[{"b": "A", "q": "Una función del Asistente de Custodia y Grabación es:", "o": ["Dictar sentencias.", "Archivar y almacenar organizadamente los expedientes judiciales.", "Formular acusaciones fiscales.", "Emitir disposiciones fiscales."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Archivar y almacenar organizadamente los expedientes judiciales.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Al recibir un documento durante el turno, el asistente debe:", "o": ["Esperar al siguiente día hábil para registrarlo siempre.", "Recibirlo, verificarlo, registrarlo y digitalizarlo conforme al procedimiento establecido.", "Guardarlo sin identificación.", "Entregarlo directamente a cualquier servidor."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Recibirlo, verificarlo, registrarlo y digitalizarlo conforme al procedimiento establecido.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Según las funciones del puesto, el asistente debe atender requerimientos de lectura de expedientes de:", "o": ["Únicamente jueces.", "Fiscales, abogados, procuradores, imputados, agraviados, entre otros, conforme corresponda.", "Cualquier persona sin identificación.", "Únicamente servidores administrativos."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Fiscales, abogados, procuradores, imputados, agraviados, entre otros, conforme corresponda.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "La conservación de los expedientes judiciales busca principalmente:", "o": ["Garantizar su integridad y disponibilidad.", "Reducir su contenido.", "Facilitar su modificación.", "Evitar que sean consultados por quienes corresponda."], "c": 0, "e": "Clave tomada de tu cuestionario de examen anterior: A) Garantizar su integridad y disponibilidad.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Cuando un usuario solicita leer un expediente judicial, el asistente debe:", "o": ["Entregarle el expediente sin ningún control.", "Atender el requerimiento conforme a los procedimientos establecidos y controlar el acceso al expediente.", "Permitirle retirar el expediente del local.", "Permitir que modifique los documentos."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Atender el requerimiento conforme a los procedimientos establecidos y controlar el acceso al expediente.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "El registro de préstamos permite principalmente:", "o": ["Conocer quién tiene el documento y controlar su circulación.", "Modificar el contenido del expediente.", "Evitar la atención al público.", "Eliminar documentos antiguos."], "c": 0, "e": "Clave tomada de tu cuestionario de examen anterior: A) Conocer quién tiene el documento y controlar su circulación.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "¿Por qué es importante registrar la devolución de un expediente?", "o": ["Para mantener la trazabilidad y control del documento.", "Para eliminar el expediente del archivo.", "Para evitar su conservación.", "Para permitir su entrega a terceros."], "c": 0, "e": "Clave tomada de tu cuestionario de examen anterior: A) Para mantener la trazabilidad y control del documento.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Si un CD de una audiencia presenta signos de deterioro físico, el asistente debe:", "o": ["Desecharlo inmediatamente.", "Ignorar el problema mientras pueda reproducirse.", "Adoptar las medidas correspondientes para preservar la información y comunicar la incidencia.", "Entregarlo al público usuario."], "c": 2, "e": "Clave tomada de tu cuestionario de examen anterior: C) Adoptar las medidas correspondientes para preservar la información y comunicar la incidencia.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "La trazabilidad documental permite:", "o": ["Conocer y controlar el recorrido o situación de un documento dentro del procedimiento correspondiente.", "Eliminar el control de documentos.", "Modificar documentos sin autorización.", "Evitar el registro de préstamos."], "c": 0, "e": "Clave tomada de tu cuestionario de examen anterior: A) Conocer y controlar el recorrido o situación de un documento dentro del procedimiento correspondiente.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "¿Qué significa recibir documentos “en turno” según las funciones del puesto?", "o": ["Recibir documentos únicamente durante el horario normal.", "Recibir, verificar, registrar y digitalizar documentos ingresados fuera del horario normal de trabajo.", "Recibir únicamente documentos administrativos.", "Recibir documentos sin registrarlos."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Recibir, verificar, registrar y digitalizar documentos ingresados fuera del horario normal de trabajo.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Antes de registrar un documento en el sistema informático, es importante:", "o": ["Ingresar información sin verificar.", "Revisar que los datos necesarios para el registro sean correctos.", "Cambiar la fecha de recepción.", "Eliminar documentos que no sean de interés personal."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Revisar que los datos necesarios para el registro sean correctos.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "¿Cuál es la finalidad de registrar las solicitudes y escritos en el sistema informático?", "o": ["Mantener un registro organizado y trazable de la documentación ingresada.", "Eliminar la documentación física inmediatamente.", "Permitir que cualquier persona modifique los datos.", "Evitar el seguimiento de los documentos."], "c": 0, "e": "Clave tomada de tu cuestionario de examen anterior: A) Mantener un registro organizado y trazable de la documentación ingresada.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Si un expediente no se encuentra en el lugar que corresponde, el asistente debe inicialmente:", "o": ["Declararlo perdido.", "Realizar la búsqueda y verificar los registros de control correspondientes.", "Crear un expediente nuevo.", "Ignorar la situación."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Realizar la búsqueda y verificar los registros de control correspondientes.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Una de las funciones del asistente consiste en recibir, registrar y digitalizar:", "o": ["Únicamente documentos administrativos.", "Solicitudes, requerimientos y escritos presentados por los sujetos procesales.", "Únicamente resoluciones de los jueces.", "Documentos personales de los servidores."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Solicitudes, requerimientos y escritos presentados por los sujetos procesales.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Si al digitalizar un documento se detecta que la imagen está incompleta o ilegible, corresponde:", "o": ["Registrarlo de todas maneras sin advertir el problema.", "Verificar y corregir la digitalización antes de continuar, conforme al procedimiento establecido.", "Eliminar el documento.", "Modificar el contenido del documento."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Verificar y corregir la digitalización antes de continuar, conforme al procedimiento establecido.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "¿Cuál de las siguientes conductas debe evitarse durante la atención al público?", "o": ["Escuchar al usuario.", "Orientarlo adecuadamente.", "Proporcionar información falsa o no verificada.", "Mantener un trato respetuoso."], "c": 2, "e": "Clave tomada de tu cuestionario de examen anterior: C) Proporcionar información falsa o no verificada.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Si un expediente prestado no ha sido devuelto en el plazo correspondiente, lo más adecuado es:", "o": ["Considerarlo perdido automáticamente.", "Ignorar la situación.", "Realizar el seguimiento correspondiente y adoptar las acciones de control establecidas.", "Eliminar el registro del préstamo."], "c": 2, "e": "Clave tomada de tu cuestionario de examen anterior: C) Realizar el seguimiento correspondiente y adoptar las acciones de control establecidas.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "¿Cuál es la finalidad principal de mantener ordenados los CDs de las audiencias?", "o": ["Facilitar su ubicación, control y conservación.", "Reducir el trabajo del órgano jurisdiccional.", "Evitar que se registren los préstamos.", "Permitir que cualquier persona pueda acceder a ellos."], "c": 0, "e": "Clave tomada de tu cuestionario de examen anterior: A) Facilitar su ubicación, control y conservación.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "¿Por qué es importante mantener copias de seguridad de las grabaciones de las audiencias?", "o": ["Para permitir que cualquier persona pueda modificarlas.", "Para prevenir la pérdida de información y garantizar su conservación.", "Para reducir el número de expedientes.", "Para evitar registrar los préstamos."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Para prevenir la pérdida de información y garantizar su conservación.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Un juez solicita un CD de audiencia que figura como prestado a otro servidor. ¿Cuál sería la actuación más adecuada?", "o": ["Entregar otro CD sin verificar la situación.", "Revisar el registro de préstamos y adoptar las acciones correspondientes para ubicar y controlar el CD.", "Eliminar el registro anterior.", "Ignorar la solicitud."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Revisar el registro de préstamos y adoptar las acciones correspondientes para ubicar y controlar el CD.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Si un servidor detecta un error en un registro informático, debe:", "o": ["Modificarlo arbitrariamente sin dejar constancia.", "Aplicar el procedimiento establecido para su corrección.", "Eliminar todo el registro.", "Ignorarlo."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Aplicar el procedimiento establecido para su corrección.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "¿Cuál de las siguientes acciones representa un riesgo para la seguridad de la información?", "o": ["Cerrar sesión al terminar de utilizar el sistema.", "Mantener las credenciales bajo control.", "Compartir las claves de acceso con otras personas.", "Registrar correctamente la información."], "c": 2, "e": "Clave tomada de tu cuestionario de examen anterior: C) Compartir las claves de acceso con otras personas.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Un abogado solicita revisar un expediente, pero no se ha efectuado el registro correspondiente de la consulta. ¿Qué debería hacer el asistente?", "o": ["Entregar el expediente inmediatamente y registrar después.", "Aplicar el procedimiento de atención y control antes de permitir la consulta.", "Negarse definitivamente a atenderlo.", "Entregarle el expediente para que lo lleve fuera de la sede."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Aplicar el procedimiento de atención y control antes de permitir la consulta.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "A", "q": "Cuando un juez solicita un CD de audiencia, el asistente debe:", "o": ["Entregarlo sin registrar la salida.", "Registrar el préstamo y controlar posteriormente su devolución.", "Negarse siempre a entregarlo.", "Copiarlo y eliminar el original."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Registrar el préstamo y controlar posteriormente su devolución.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "B", "q": "Según la Ley del Código de Ética de la Función Pública, no constituye un deber del servidor público:", "o": ["Responsabilidad", "Uso adecuado de bienes del Estado", "Neutralidad", "Obtener ventajas indebidas"], "c": 3, "e": "Clave tomada de tu cuestionario de examen anterior: D) Obtener ventajas indebidas", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "B", "q": "Según el código de ética de la función pública, el principio ético de Lealtad Estado de Derecho implica:", "o": ["Ocupar cargos de confianza aun cuando sean regímenes de facto.", "Actuar con imparcialidad política.", "Cumplir con sus funciones dándole a cada quien lo que es debido.", "Ninguna de las anteriores."], "c": 3, "e": "Clave tomada de tu cuestionario de examen anterior: D) Ninguna de las anteriores.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1, "n": "Clave tomada de tu archivo: confírmala con el texto de la norma (Ley 27815 y su Reglamento, D.S. 033-2005-PCM)."}, {"b": "B", "q": "La gravedad de una infracción ética es determinada por:", "o": ["El jefe inmediato", "El denunciante", "El servidor", "La comisión de procesos administrativos disciplinarios."], "c": 3, "e": "Clave tomada de tu cuestionario de examen anterior: D) La comisión de procesos administrativos disciplinarios.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1, "n": "Clave tomada de tu archivo: confírmala con el texto de la norma (Ley 27815 y su Reglamento, D.S. 033-2005-PCM)."}, {"b": "B", "q": "El siguiente enunciado: “El mal uso del poder público o privado para obtener un beneficio indebido; económico, no económico o ventaja; directa o indirecta; por agentes públicos, privados o ciudadanos; vulnerando principios y deberes éticos, normas y derechos fundamentales.” Representa a:", "o": ["Una descripción de lo que haría un funcionario público medianamente diligente.", "Una descripción de Corrupción.", "Un comportamiento reprochable que no merece sanción.", "Una falsedad, ya que nadie que ejerza la función pública se comporta de esa manera."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Una descripción de Corrupción.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "B", "q": "__________ es un deber de la Función Pública:", "o": ["La neutralidad", "La veracidad", "La lealtad", "Hacer buen uso de la información"], "c": 0, "e": "Clave tomada de tu cuestionario de examen anterior: A) La neutralidad", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1}, {"b": "B", "q": "Según el Artículo 10 del Reglamento de la Ley del Código de Ética de la Función Pública (aprobada mediante el DECRETO SUPREMO Nº 033-2005-PCM), La aplicación de las sanciones se realizará teniendo en consideración los siguientes criterios: (marque la opción INCORRECTA)", "o": ["El perjuicio ocasionado a los administrados o a la administración pública.", "Afectación a los procedimientos.", "Naturaleza de las funciones desempeñadas así como el cargo y jerarquía del infractor.", "Tiempo de servicio del infractor."], "c": 1, "e": "Clave tomada de tu cuestionario de examen anterior: B) Afectación a los procedimientos.", "src": {"ref": "Examen anterior (tu cuestionario)", "url": ""}, "ex": 1, "n": "Clave tomada de tu archivo: confírmala con el texto de la norma (Ley 27815 y su Reglamento, D.S. 033-2005-PCM)."}];
+BASE=BASE.concat(PREV);
+var PDFQ=["Es el principio orientador de la gestión pública en el cual la razón de ser de la gestión pública es servir a los ciudadanos (Política Nacional de Modernización de la Gestión Pública).", "Es el proceso que se inicia identificando al público objetivo al cual la institución debe servir y determinando los bienes y servicios que le corresponde producir (planeamiento estratégico).", "¿Qué jueces integran un Juzgado Penal Colegiado?", "¿Cuántos años dura la gestión de los Presidentes de las Cortes Superiores?", "Un servidor judicial que ostenta el cargo de RELATOR, ¿en qué órgano jurisdiccional desempeña sus funciones?", "Cuando frente a una pluralidad de acciones del sujeto activo se produce una pluralidad de delitos, nos referimos a (concurso real, ideal, mixto).", "Una norma jurídica es vigente de acuerdo a nuestro ordenamiento jurídico: cuando…", "¿Qué resolución no requiere la firma del Juez? (sentencia, auto, decreto).", "¿Qué juzgado es competente para conocer un proceso especial como la querella?", "La imputación objetiva es la atribución de una acción a un resultado cuando esa acción crea un peligro no permitido…", "El control difuso es una facultad constitucional que permite a los jueces inaplicar normas incompatibles con la Constitución.", "La norma de mayor jerarquía en nuestro sistema jurídico peruano.", "Son susceptibles de apelación las sentencias de la Corte Interamericana de Derechos Humanos.", "El juez puede suspender la ejecución de la pena siempre que la condena se refiera a pena privativa de libertad no mayor de…", "¿Quiénes pueden imponer penas y/o medidas de seguridad?", "Según la ley peruana, ¿qué función tiene la pena?"];
+
+// Normas del temario y copia del texto en sitios del Estado (se abren en otra pestaña; se pegan desde ahí).
+var NORMAS=[
+{n:"Ley 27815 · Código de Ética de la Función Pública",b:"B",u:"https://www.sunat.gob.pe/institucional/integridad/normas/Ley-27815.pdf"},
+{n:"Constitución Política del Perú · Poder Judicial (arts. 138-139)",b:"C",u:"https://www.senasa.gob.pe/senasa/wp-content/uploads/2017/09/CONSTITUCION-POLITICA-DEL-PERU-DE-1993.pdf"},
+{n:"Ley 29497 · Nueva Ley Procesal del Trabajo",b:"C",u:"https://diariooficial.elperuano.pe/Normas/obtenerDocumento?idNorma=48"},
+{n:"TUO Ley 27806 · Transparencia y acceso a la información pública",b:"D",u:""},
+{n:"TUO Ley 27444 · Procedimiento Administrativo General (D.S. 004-2019-JUS; confirma si rige un TUO más nuevo)",b:"D",u:"https://cdn.www.gob.pe/uploads/document/file/5320370/4770872-decreto-supremo-n-004-2019-jus.pdf"},
+{n:"Ley 29733 · Protección de Datos Personales",b:"D",u:"https://www.congreso.gob.pe/Docs/DGP/DIDP/files/ley_29733.pdf"},
+{n:"Otra norma o documento del puesto",b:"A",u:""}
+];
+
+
+var GROQ_URL="https://api.groq.com/openai/v1/chat/completions";
+var app=document.getElementById("app");
+var EXTRA=[],ERR={},HIST=[];
+function ld(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+EXTRA=ld("cust_extra",[]);ERR=ld("cust_err",{});HIST=ld("cust_hist",[]);
+var CFG=ld("cust_cfg",{key:"",model:"llama-3.3-70b-versatile",vmodel:"openai/gpt-oss-120b",remember:true});
+var KEY=CFG.key||"";
+var GEN={run:false,ctl:null,added:0},LASTMSG="";
+
+function bank(){return BASE.concat(EXTRA)}
+function key(q){return q.q}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function norm(s){return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[“”«»"'‘’`]/g,"").replace(/\s+/g," ").trim()}
+function val(id){var e=document.getElementById(id);return e?e.value.trim():""}
+function srcHtml(q){
+  if(!q.src)return "";
+  var u=q.src.url||"";
+  if(!/^https:\/\//.test(u))u="https://www.google.com/search?q="+encodeURIComponent((q.src.ref||"")+" site:gob.pe OR site:elperuano.pe OR site:spij.minjus.gob.pe");
+  return '<div class="src">Fuente: '+esc(q.src.ref||"(no indicada)")+(q.src.cita?' · «'+esc(q.src.cita)+'»':'')+' · <a href="'+esc(u)+'" target="_blank" rel="noopener">'+(q.src.url?'abrir fuente':'buscar en fuentes oficiales')+'</a>'+(q.v?' · verificación IA: '+esc(q.v):'')+'</div>';
+}
+
+// ---------- Normas (enlaces a copias oficiales) ----------
+
+var S=null;
+function setStatus(t){LASTMSG=t;var m=document.getElementById("g_msg");if(m)m.textContent=t}
+function updateCount(){var e=document.getElementById("bn");if(e)e.textContent=bank().length}
+function genUI(){
+  var go=document.getElementById("g_go"),ct=document.getElementById("g_cont"),st=document.getElementById("g_stop");
+  if(!go)return;
+  go.disabled=ct.disabled=GEN.run;st.hidden=!GEN.run;
+}
+function saveCfg(){
+  var k=document.getElementById("g_key");if(!k)return;
+  KEY=k.value.trim();
+  CFG.remember=document.getElementById("g_rem").checked;
+  CFG.model=val("g_model")||"llama-3.3-70b-versatile";
+  CFG.vmodel=val("g_vmodel")||CFG.model;
+  CFG.key=CFG.remember?KEY:"";
+  sv("cust_cfg",CFG);
+}
+function normaSel(){
+  var i=+document.getElementById("g_norma").value,l=document.getElementById("g_link");
+  if(i<0){l.innerHTML="";return}
+  var N=NORMAS[i];
+  document.getElementById("g_b").value=N.b;
+  l.innerHTML=N.u?'Copia de la norma en un sitio del Estado: <a href="'+esc(N.u)+'" target="_blank" rel="noopener">abrir en otra pestaña</a>. Confirma en El Peruano o SPIJ que es la versión vigente.':'Busca el texto vigente en El Peruano (elperuano.pe), SPIJ (spij.minjus.gob.pe) o gob.pe.';
+}
+
+// ---------- Groq ----------
+function cancelErr(){var e=new Error("cancelled");e.code="cancelled";return e}
+function sleep(ms,sig){return new Promise(function(res,rej){
+  if(sig&&sig.aborted)return rej(cancelErr());
+  var t=setTimeout(res,ms);
+  if(sig)sig.addEventListener("abort",function(){clearTimeout(t);rej(cancelErr())})
+})}
+async function groq(model,msgs,o){
+  o=o||{};
+  for(var at=0;at<4;at++){
+    var body={model:model,messages:msgs,temperature:o.t==null?0.7:o.t,max_tokens:o.max||8000};
+    if(!/compound/.test(model))body.response_format={type:"json_object"};
+    var r;
+    try{
+      r=await fetch(GROQ_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+KEY},body:JSON.stringify(body),signal:o.sig});
+    }catch(e){
+      if(e&&e.name==="AbortError")throw cancelErr();
+      var ne=new Error("net");ne.code="network";throw ne;
+    }
+    if(r.status===429&&at<3){
+      var w=Math.min(parseFloat(r.headers.get("retry-after"))||10*(at+1),40);
+      setStatus("Límite de uso de Groq alcanzado. Esperando "+Math.ceil(w)+" s y reintento…");
+      await sleep(w*1000,o.sig);continue;
+    }
+    if(!r.ok){
+      var he=new Error("http");he.status=r.status;
+      try{he.detail=(await r.json()).error.message}catch(_){}
+      throw he;
+    }
+    var d=await r.json();
+    return (d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||"";
+  }
+  var re=new Error("rl");re.status=429;throw re;
+}
+function parseObj(t){
+  t=String(t).replace(/```json|```/g,"").trim();
+  try{return JSON.parse(t)}catch(e){}
+  var a=t.indexOf("{"),b=t.lastIndexOf("}");
+  if(a>=0&&b>a){try{return JSON.parse(t.slice(a,b+1))}catch(e){}}
+  var c=t.indexOf("["),d=t.lastIndexOf("]");
+  if(c>=0&&d>c){try{return JSON.parse(t.slice(c,d+1))}catch(e){}}
+  return null;
+}
+function errMsg(e){
+  if(!e)return "Error desconocido.";
+  if(e.code==="cancelled")return "Generación detenida.";
+  if(e.code==="network")return "No se pudo conectar con Groq. Revisa tu internet. Si abriste esto dentro de claude.ai, guarda el archivo .html y ábrelo directamente en tu navegador.";
+  var d=e.detail?" ("+e.detail+")":"";
+  if(e.status===401)return "La clave de Groq no es válida. Revísala.";
+  if(e.status===403)return "Groq rechazó la solicitud (403)"+d;
+  if(e.status===404)return "Modelo no encontrado en Groq"+d;
+  if(e.status===413)return "La solicitud es demasiado grande"+d;
+  if(e.status===429)return "Llegaste al límite de uso de Groq. Espera unos minutos e intenta de nuevo.";
+  if(e.status===400)return "Groq no aceptó la solicitud"+d;
+  return "Falló la conexión con Groq"+(e.status?" ("+e.status+")":"")+d+".";
+}
+
+// ---------- Probar conexión ----------
+async function testConn(){
+  saveCfg();
+  var c=document.getElementById("g_conn"),b=document.getElementById("g_test");
+  if(!c)return;
+  if(!KEY){c.style.color="var(--mut)";c.textContent="⚪ Sin clave. Pega tu clave de Groq.";return}
+  c.style.color="var(--mut)";c.textContent="Probando conexión…";if(b)b.disabled=true;
+  try{
+    var r=await fetch("https://api.groq.com/openai/v1/models",{headers:{"Authorization":"Bearer "+KEY}});
+    if(!r.ok){var e=new Error("http");e.status=r.status;try{e.detail=(await r.json()).error.message}catch(_){}throw e}
+    var d=await r.json(),ids=(d.data||[]).map(function(m){return m.id});
+    var chat=ids.filter(function(m){return !/whisper|tts|guard|orpheus|playai|safeguard|embed/i.test(m)});
+    var dl=document.getElementById("mlist");
+    if(dl)dl.innerHTML=chat.map(function(m){return '<option value="'+esc(m)+'">'}).join("");
+    var pref=["openai/gpt-oss-120b","llama-3.3-70b-versatile","openai/gpt-oss-20b","qwen/qwen3-32b","meta-llama/llama-4-scout-17b-16e-instruct","llama-3.1-8b-instant"];
+    var cambio=[];
+    if(chat.length&&chat.indexOf(CFG.model)<0){
+      var g=pref.filter(function(m){return chat.indexOf(m)>=0})[0]||chat[0];
+      cambio.push("generador: "+g);CFG.model=g;var e1=document.getElementById("g_model");if(e1)e1.value=g;
+    }
+    if(chat.length&&chat.indexOf(CFG.vmodel)<0){
+      var v=pref.filter(function(m){return chat.indexOf(m)>=0&&m!==CFG.model})[0]||CFG.model;
+      cambio.push("verificador: "+v);CFG.vmodel=v;var e2=document.getElementById("g_vmodel");if(e2)e2.value=v;
+    }
+    if(cambio.length){sv("cust_cfg",CFG);c.style.color="var(--ok)";c.textContent="🟢 Conectado. Tu cuenta no tenía algunos modelos, así que elegí otros ("+cambio.join("; ")+"). Disponibles: "+chat.join(", ")}
+    else{c.style.color="var(--ok)";c.textContent="🟢 Conectado a Groq. Clave válida y modelos disponibles."}
+  }catch(e){
+    c.style.color="var(--ko)";
+    c.textContent="🔴 "+(e&&e.status===401?"Clave inválida. Revísala.":errMsg(e));
+  }
+  if(b)b.disabled=false;
+}
+
+// ---------- Generación + verificación ----------
+function normaTexto(N){return N?N.n.replace(/\s*\(.*?\)\s*$/,""):""}
+async function genBatch(b,N,tema,n,sig){
+  var recent=bank().filter(function(q){return q.b===b}).slice(-40).map(function(q){return "- "+q.q}).join("\n");
+  var ctx="";
+  if(b==="A"){ctx="\nContexto del puesto (funciones reales del cargo):\n"+BASE.filter(function(q){return q.b==="A"}).map(function(q){return "- "+q.e}).join("\n")+"\nPara este bloque, \"fuente\" debe ser \"Funciones del puesto (aviso de convocatoria)\" o una norma real aplicable (p. ej. Ley 29733 de datos personales, TUO de la LOPJ).\n"}
+  var ej=shuffle(PREV.filter(function(q){return q.b===b})).slice(0,5);
+  if(ej.length<3)ej=ej.concat(shuffle(PREV).slice(0,3));
+  var estilo="\nEJEMPLOS REALES de exámenes anteriores del mismo concurso (imita su nivel, redacción y tipo de distractores; NO los copies):\n"+ej.map(function(q){return "- "+q.q+" | Alternativas: "+q.o.join(" / ")+" | Correcta: "+q.o[q.c]}).join("\n")+
+   "\nTEMAS que también aparecieron en exámenes anteriores del Poder Judicial (úsalos como guía de temario, sin copiar): "+shuffle(PDFQ).slice(0,6).join(" ")+
+   "\nNo hagas preguntas sobre nombres de autoridades actuales (presidentes de Cortes, ministros) ni datos que cambian con el tiempo.\n";
+  var sys="Eres redactor experto de exámenes de selección de personal del Poder Judicial del Perú (cargo: Asistente Jurisdiccional de Custodia de Expedientes, Módulo Corporativo Laboral). Usas solo normativa peruana oficial y vigente (Constitución, leyes, TUO, decretos supremos publicados en El Peruano, SPIJ, gob.pe, congreso.gob.pe). Nunca inventas números de ley, artículos, plazos ni definiciones. Si no estás seguro de un dato, no formulas esa pregunta. Respondes solo con JSON válido.";
+  var usr="Redacta "+n+" preguntas NUEVAS de opción múltiple para el bloque \""+BLOQUES[b]+"\"."+
+   (N?"\nNorma obligatoria: "+normaTexto(N)+".":"")+
+   (tema?"\nTema específico: "+tema+".":"")+
+   "\nReglas: 4 alternativas, una sola correcta, sin ambigüedad; distractores plausibles, del mismo tipo y longitud parecida; sin \"todas las anteriores\" ni \"ninguna\"; varía la posición de la correcta; cubre artículos o aspectos distintos entre sí; la explicación debe decir por qué la correcta lo es (con el artículo si aplica). Indica en \"fuente\" la norma y el artículo exactos (ej.: \"Ley 27815, art. 7\"). Semilla de variedad: "+Math.random().toString(36).slice(2,8)+"."+ctx+
+   estilo+(recent?"\nNO repitas ni parafrasees estas preguntas ya existentes:\n"+recent:"")+
+   "\nFormato: {\"preguntas\":[{\"q\":\"...\",\"o\":[\"...\",\"...\",\"...\",\"...\"],\"c\":0,\"e\":\"...\",\"fuente\":\"...\"}]} donde c es el índice (0 a 3) de la correcta.";
+  var raw=await groq(CFG.model,[{role:"system",content:sys},{role:"user",content:usr}],{t:0.8,sig:sig});
+  var obj=parseObj(raw),arr=obj&&(Array.isArray(obj)?obj:obj.preguntas);
+  if(!Array.isArray(arr))arr=[];
+
+  // Filtro local de formato y duplicados
+  var have={};bank().forEach(function(q){have[norm(q.q)]=1});
+  var cand=[],bad=0,dup=0;
+  arr.forEach(function(x){
+    try{
+      if(!x||typeof x.q!=="string"||!Array.isArray(x.o)||x.o.length!==4||typeof x.c!=="number"||x.c%1!==0||x.c<0||x.c>3){bad++;return}
+      var o=x.o.map(function(t){return String(t).trim()}),u={};
+      o.forEach(function(t){u[norm(t)]=1});
+      if(o.some(function(t){return !t})||Object.keys(u).length!==4||/todas las anteriores|ninguna de las anteriores/i.test(o.join(" "))){bad++;return}
+      if(have[norm(x.q)]){dup++;return}
+      have[norm(x.q)]=1;
+      cand.push({q:x.q.trim(),o:o,c:x.c,e:String(x.e||""),f:String(x.fuente||"").trim()});
+    }catch(err){bad++}
+  });
+  if(!cand.length)return {ok:[],bad:bad,dup:dup,rej:0};
+
+  // Verificación a ciegas: el verificador no ve la respuesta propuesta y recibe las alternativas barajadas
+  var perms=cand.map(function(c){return shuffle([0,1,2,3])});
+  var vtxt=cand.map(function(c,i){return i+". "+c.q+"\n"+perms[i].map(function(oi,p){return "   "+"ABCD"[p]+") "+c.o[oi]}).join("\n")}).join("\n\n");
+  var vsys="Eres un revisor jurídico estricto de exámenes sobre normativa peruana vigente. Resuelves cada pregunta de forma independiente. Si ninguna o más de una alternativa es correcta, si la pregunta es ambigua, o si depende de un dato que no conoces con certeza, lo indicas. Respondes solo con JSON válido.";
+  var vusr="Resuelve estas preguntas. Para cada una indica la letra correcta (0=A, 1=B, 2=C, 3=D), tu confianza (\"alta\", \"media\" o \"baja\"), si es ambigua o tiene error, y el problema si lo hay.\nFormato: {\"revisiones\":[{\"i\":0,\"respuesta\":0,\"confianza\":\"alta\",\"ambigua\":false,\"problema\":\"\"}]}\n\n"+vtxt;
+  var vraw;
+  try{vraw=await groq(CFG.vmodel,[{role:"system",content:vsys},{role:"user",content:vusr}],{t:0,sig:sig})}
+  catch(e){
+    if((e.status===404||e.status===400)&&CFG.vmodel!==CFG.model){vraw=await groq(CFG.model,[{role:"system",content:vsys},{role:"user",content:vusr}],{t:0,sig:sig})}
+    else throw e;
+  }
+  var vo=parseObj(vraw),rev=vo&&(Array.isArray(vo)?vo:vo.revisiones);
+  if(!Array.isArray(rev))rev=[];
+  var byI={};rev.forEach(function(r){if(r&&typeof r.i==="number")byI[r.i]=r});
+
+  var ok=[],rej=0;
+  cand.forEach(function(c,i){
+    var r=byI[i];
+    if(!r||r.ambigua===true||r.confianza==="baja"||typeof r.respuesta!=="number"||perms[i][r.respuesta]!==c.c){rej++;return}
+    var q={b:b,q:c.q,o:c.o,c:c.c,e:c.e,src:{ref:c.f||normaTexto(N)||"Fuente no indicada",url:(N&&/^https:\/\//.test(N.u))?N.u:""},gen:1,v:r.confianza==="alta"?"alta":"media"};
+    if(q.v==="media")q.n="La IA verificadora tuvo confianza media: confirma esta pregunta con la norma oficial.";
+    ok.push(q);
+  });
+  EXTRA=EXTRA.concat(ok);sv("cust_extra",EXTRA);
+  return {ok:ok,bad:bad,dup:dup,rej:rej};
+}
+async function gen(cont){
+  if(GEN.run)return;
+  saveCfg();
+  if(!KEY){setStatus("Pega tu clave de Groq para generar.");return}
+  var bsel=val("g_b")||"*",ni=+val("g_norma"),N=ni>=0?NORMAS[ni]:null,n=+val("g_n")||10,tema=val("g_tema");
+  GEN.run=true;GEN.added=0;GEN.ctl=new AbortController();genUI();
+  var rot=Math.floor(Math.random()*5),fails=0,tot={bad:0,dup:0,rej:0},tandas=0;
+  try{
+    do{
+      var b=bsel==="*"?"ABCDE"[rot++%5]:bsel;
+      setStatus("Generando y verificando preguntas del bloque "+b+"… puede tardar unos segundos.");
+      var r=await genBatch(b,N,tema,n,GEN.ctl.signal);
+      tandas++;GEN.added+=r.ok.length;tot.bad+=r.bad;tot.dup+=r.dup;tot.rej+=r.rej;updateCount();
+      setStatus(GEN.added+" preguntas verificadas agregadas en "+tandas+" tanda"+(tandas>1?"s":"")+" · descartadas: "+tot.rej+" por la verificación, "+tot.bad+" mal formadas, "+tot.dup+" repetidas."+(cont?" Sigo generando…":""));
+      if(!r.ok.length){fails++;if(fails>=3){setStatus(GEN.added+" preguntas agregadas. Me detuve: 3 tandas seguidas sin preguntas válidas. Prueba otro modelo o un tema distinto.");break}}else fails=0;
+      if(cont)await sleep(1500,GEN.ctl.signal);
+    }while(cont);
+  }catch(e){
+    setStatus((GEN.added?GEN.added+" preguntas agregadas. ":"")+errMsg(e));
+  }
+  GEN.run=false;GEN.ctl=null;genUI();
+  if(!document.getElementById("g_msg")&&!S)home();
+}
+function stopGen(){if(GEN.ctl)GEN.ctl.abort()}
+
+// ---------- Importar / borrar ----------
+function imp(){
+  var m=document.getElementById("msg");
+  try{
+    var a=JSON.parse(document.getElementById("imp").value);
+    if(!Array.isArray(a))throw 0;
+    var ok=a.filter(function(x){return x&&x.q&&Array.isArray(x.o)&&x.o.length>=2&&typeof x.c==="number"&&x.c>=0&&x.c<x.o.length});
+    ok.forEach(function(x){if(!BLOQUES[x.b])x.b="A";x.e=x.e||""});
+    EXTRA=EXTRA.concat(ok);sv("cust_extra",EXTRA);LASTMSG="";tab("practica");
+    document.getElementById("msg").textContent=ok.length+" preguntas agregadas ("+(a.length-ok.length)+" descartadas).";
+  }catch(e){m.textContent="JSON inválido. Revisa el formato."}
+}
+function clr(){if(confirm("¿Borrar preguntas agregadas, errores e historial?")){EXTRA=[];ERR={};HIST=[];LASTMSG="";sv("cust_extra",EXTRA);sv("cust_err",ERR);sv("cust_hist",HIST);tab("practica")}}
+
+// ---------- Sesión de práctica / examen ----------
+function mk(q){return {q:q,ord:shuffle(q.o.map(function(_,i){return i})),sel:null}}
+function start(mode){
+  var blq=(document.getElementById("blq")||{}).value||"";
+  var pool=bank();
+  if(blq)pool=pool.filter(function(q){return q.b===blq});
+  if(mode==="err")pool=bank().filter(function(q){return ERR[key(q)]});
+  if(!pool.length){alert("No hay preguntas para esa selección.");return}
+  if(mode==="inf"&&!KEY&&!confirm("No hay clave de Groq guardada: la práctica ilimitada solo usará el banco actual y terminará al acabarse. ¿Continuar?"))return;
+  pool=shuffle(pool);
+  if(mode==="exam")pool=pool.slice(0,30);
+  S={mode:mode,qs:pool.map(mk),i:0,t0:Date.now(),done:false,blq:blq,fetching:null,wait:false,err:""};
+  render();
+}
+function prefetch(){
+  var s=S;
+  if(!s||s.mode!=="inf"||!KEY||s.fetching)return null;
+  var b=s.blq||"ABCDE"[Math.floor(Math.random()*5)];
+  var p=genBatch(b,null,"",5,null).then(function(r){
+    r.ok.forEach(function(q){s.qs.push(mk(q))});
+    s.err=r.ok.length?"":"La IA no devolvió preguntas válidas esta vez.";
+  }).catch(function(e){s.err=errMsg(e)}).then(function(){s.fetching=null});
+  s.fetching=p;return p;
+}
+function render(){
+  var s=S,it=s.qs[s.i],q=it.q,L="ABCDEFGH";
+  var inf=s.mode==="inf";
+  if(inf&&s.i>=s.qs.length-3)prefetch();
+  var pct=inf?100:Math.round(s.i/s.qs.length*100);
+  var h='<div class="card"><div class="meta"><span>Pregunta '+(s.i+1)+(inf?' (ilimitado)':' de '+s.qs.length)+' <span class="tag">'+esc(BLOQUES[q.b])+'</span></span><span id="clk"></span></div><div class="bar"><i style="width:'+pct+'%"></i></div>'+
+  '<p><b>'+esc(q.q)+'</b></p>';
+  var show=(s.mode!=="exam")&&it.sel!==null;
+  it.ord.forEach(function(oi,pos){
+    var cls="opt";
+    if(it.sel===pos)cls+=" sel";
+    if(show){if(oi===q.c)cls+=" ok";else if(it.sel===pos)cls+=" ko"}
+    h+='<button class="'+cls+'" '+(show?'disabled':'')+' onclick="pick('+pos+')">'+L[pos]+') '+esc(q.o[oi])+'</button>';
+  });
+  if(show){h+='<div class="exp"><b>'+(it.ord[it.sel]===q.c?'Correcto.':'Incorrecto.')+'</b> '+esc(q.e||"")+(q.n?'<br><i>'+esc(q.n)+'</i>':'')+srcHtml(q)+'</div>'}
+  h+='<div class="row"><button onclick="nav(-1)" '+(s.i&&!s.wait?'':'disabled')+'>Anterior</button>';
+  if(inf){h+='<button class="p" onclick="nav(1)" '+(s.wait?'disabled':'')+'>'+(s.wait?'Generando más preguntas…':'Siguiente')+'</button><button onclick="finish()">Terminar</button>'}
+  else if(s.i<s.qs.length-1)h+='<button class="p" onclick="nav(1)">Siguiente</button>';
+  else h+='<button class="p" onclick="finish()">Terminar</button>';
+  h+='</div>'+(s.err?'<div class="warn">'+esc(s.err)+'</div>':'')+'</div>';
+  app.innerHTML=h;tick();
+}
+function tick(){
+  var c=document.getElementById("clk");if(!c||!S||S.done)return;
+  var t=Math.floor((Date.now()-S.t0)/1000);c.textContent=("0"+Math.floor(t/60)).slice(-2)+":"+("0"+t%60).slice(-2);
+  clearTimeout(S.tm);S.tm=setTimeout(tick,1000);
+}
+function pick(pos){var it=S.qs[S.i];if(S.mode!=="exam"&&it.sel!==null)return;it.sel=pos;render()}
+async function nav(d){
+  var s=S;
+  if(d>0&&s.mode==="inf"&&s.i>=s.qs.length-1){
+    s.err="";
+    var p=s.fetching||prefetch();
+    if(p){s.wait=true;render();await p;s.wait=false;if(S!==s)return}
+    if(s.i<s.qs.length-1){s.i++}
+    else if(!s.err){s.err=KEY?"No hay más preguntas por ahora. Intenta de nuevo.":"Ya viste todas las preguntas del banco. Agrega tu clave de Groq en el inicio para generar más."}
+    render();return;
+  }
+  s.i+=d;render();
+}
+function finish(){
+  var s=S;
+  if(s.mode==="inf"){
+    s.qs=s.qs.filter(function(x){return x.sel!==null});
+    if(!s.qs.length){clearTimeout(s.tm);s.done=true;home();return}
+  }else{
+    var un=s.qs.filter(function(x){return x.sel===null}).length;
+    if(un&&!confirm("Tienes "+un+" sin responder. ¿Terminar igual?"))return;
+  }
+  s.done=true;clearTimeout(s.tm);
+  var ok=0;
+  s.qs.forEach(function(x){
+    var good=x.sel!==null&&x.ord[x.sel]===x.q.c;
+    if(x.sel!==null){var st=STATS[x.q.b]||(STATS[x.q.b]={ok:0,n:0});st.n++;if(good)st.ok++}
+    if(good){ok++;if(ERR[key(x.q)]&&s.mode==="err")delete ERR[key(x.q)]}else{ERR[key(x.q)]=1}
+  });
+  sv("cust_err",ERR);sv("cust_stats",STATS);
+  var n=s.qs.length,v=(ok/n*20),ap=v>=13;
+  if(s.mode==="exam"){HIST.push({f:new Date().toLocaleDateString("es-PE"),ok:ok,n:n,v:v.toFixed(2),ap:ap});sv("cust_hist",HIST)}
+  var h='<div class="card"><div class="big">'+ok+' / '+n+'</div>Nota vigesimal: <b>'+v.toFixed(2)+' / 20</b> · Puntaje del examen (×0.3): <b>'+(v*0.3).toFixed(2)+' / 6</b><br>'+
+  (ap?'<b style="color:var(--ok)">Aprobado</b> (mínimo 13/20).':'<b style="color:var(--ko)">Desaprobado</b> (mínimo 13/20, es decir 20 de 30).')+
+  '<div class="row"><button class="p" onclick="home()">Inicio</button></div></div><div class="card"><b>Revisión</b>';
+  var L="ABCDEFGH";
+  s.qs.forEach(function(x,i){
+    var q=x.q,good=x.sel!==null&&x.ord[x.sel]===q.c;
+    var cpos=x.ord.indexOf(q.c);
+    h+='<div class="rev '+(good?'ok':'ko')+'"><b>'+(i+1)+'. '+esc(q.q)+'</b><br>'+
+    'Tu respuesta: '+(x.sel===null?'(sin responder)':L[x.sel]+') '+esc(q.o[x.ord[x.sel]]))+'<br>'+
+    'Correcta: <b>'+L[cpos]+') '+esc(q.o[q.c])+'</b><div class="exp">'+esc(q.e||"")+(q.n?'<br><i>'+esc(q.n)+'</i>':'')+srcHtml(q)+'</div></div>';
+  });
+  h+='</div>';app.innerHTML=h;window.scrollTo(0,0);
+}
+// ================= NUEVA INTERFAZ (dashboard, pestañas, entrevista) =================
+var STATS=ld("cust_stats",{}),INTH=ld("cust_int",[]),TAB="home",UID=0;
+function home(){tab("home")}
+function tab(t){
+  TAB=t;if(S){clearTimeout(S.tm);S=null}
+  [].forEach.call(document.querySelectorAll("nav button"),function(b){b.className=b.dataset.t===t?"on":""});
+  ({home:scrHome,practica:scrPractica,entrevista:scrInt,ia:scrIA})[t]();
+  window.scrollTo(0,0);
+}
+function gauge(p,c1,c2,lbl){
+  var id="g"+(UID++),L=125.66;p=Math.max(0,Math.min(100,p||0));
+  var d='M10 52A40 40 0 0 1 90 52';
+  return '<div class="gz"><svg viewBox="0 0 100 62"><defs><linearGradient id="'+id+'"><stop offset="0" stop-color="'+c1+'"/><stop offset="1" stop-color="'+c2+'"/></linearGradient></defs><path d="'+d+'" fill="none" stroke="#ffffff18" stroke-width="10" stroke-linecap="round"/><path d="'+d+'" fill="none" stroke="url(#'+id+')" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+L+'" stroke-dashoffset="'+(L*(1-p/100))+'"/></svg><div class="gv">'+Math.round(p)+'%</div><div class="gl">'+lbl+'</div></div>';
+}
+function area(v){
+  if(!v.length)return '<div class="sub">Aún no hay simulacros. Haz uno y aquí verás tu progreso.</div>';
+  var W=300,H=100,n=v.length,id="a"+(UID++);
+  var pts=v.map(function(x,i){return [n>1?i*W/(n-1):W/2,H-8-x/20*(H-16)]});
+  var d=pts.map(function(p,i){return (i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)}).join("");
+  var ty=H-8-13/20*(H-16);
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff3d71" stop-opacity=".6"/><stop offset="1" stop-color="#7b5cff" stop-opacity="0"/></linearGradient></defs>'+
+  '<line x1="0" x2="'+W+'" y1="'+ty+'" y2="'+ty+'" stroke="#00d4ff" stroke-dasharray="4 4" opacity=".7"/>'+
+  (n>1?'<path d="'+d+'L'+W+' '+H+'L0 '+H+'Z" fill="url(#'+id+')"/><path d="'+d+'" fill="none" stroke="#ff3d71" stroke-width="2"/>':'')+
+  pts.map(function(p){return '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" fill="#ff3d71"/>'}).join("")+'</svg><div class="sub" style="margin:0">Notas de simulacros (línea celeste = mínimo 13/20)</div>';
+}
+function scrHome(){
+  var tn=0,tk=0;Object.keys(STATS).forEach(function(k){tn+=STATS[k].n;tk+=STATS[k].ok});
+  var prec=tn?tk/tn*100:0,apr=HIST.length?HIST.filter(function(x){return x.ap}).length/HIST.length*100:0;
+  var h='<div class="top"><div class="logo">C</div><div><h1>Custodia de Expedientes</h1><small>CSJ Lima Norte · Proceso 002-2026 · Cód. 00414_1</small></div></div>'+
+  '<div class="grid"><div class="stat"><b>'+bank().length+'</b><span>Preguntas en banco</span></div><div class="stat"><b>'+tn+'</b><span>Respondidas</span></div><div class="stat"><b>'+INTH.length+'</b><span>Entrevistas</span></div></div>'+
+  '<div class="card"><div class="g2">'+gauge(prec,"#ff3d71","#c2185b","Precisión global")+gauge(apr,"#7b5cff","#00d4ff","Simulacros aprobados")+'</div></div>'+
+  '<div class="card"><h2>Progreso en simulacros</h2>'+area(HIST.slice(-10).map(function(x){return +x.v}))+'</div>'+
+  '<div class="card"><h2>Dominio por bloque</h2>'+Object.keys(BLOQUES).map(function(k){var s=STATS[k],p=s&&s.n?Math.round(s.ok/s.n*100):0;return '<div class="pb"><em>'+k+'. '+esc(BLOQUES[k].split(" ")[0])+'</em><div class="bar"><i style="width:'+p+'%"></i></div><b>'+(s&&s.n?p+'%':'—')+'</b></div>'}).join("")+'<div class="sub" style="margin:4px 0 0">Aprobar requiere 20 de 30 (13/20).</div></div>'+
+  '<div class="row f"><button class="p" onclick="tab(\'practica\')">Practicar</button><button class="c" onclick="tab(\'entrevista\')">Entrevista</button></div>';
+  if(HIST.length)h+='<div class="card"><h2>Últimos simulacros</h2><div class="sub" style="margin:0">'+HIST.slice(-5).reverse().map(function(x){return x.f+' · '+x.ok+'/'+x.n+' · '+x.v+'/20 · '+(x.ap?'APROBADO':'desaprobado')}).join('<br>')+'</div></div>';
+  app.innerHTML=h;
+}
+function scrPractica(){
+  var ne=Object.keys(ERR).length;
+  app.innerHTML='<div class="card"><h2>Practicar</h2><div class="sub">Examen: 30 preguntas, 1 punto c/u sin puntos en contra, escala vigesimal. Mínimo 13/20 (20 de 30).</div>'+
+  '<label>Bloque<select id="blq"><option value="">Todos</option>'+Object.keys(BLOQUES).map(function(k){return '<option value="'+k+'">'+k+'. '+BLOQUES[k]+'</option>'}).join('')+'</select></label>'+
+  '<div class="row f"><button class="p" onclick="start(\'exam\')">Simulacro (30)</button><button onclick="start(\'prac\')">Práctica con explicación</button><button class="c" onclick="start(\'inf\')">Ilimitada con IA</button><button onclick="start(\'err\')" '+(ne?'':'disabled')+'>Mis errores ('+ne+')</button></div></div>'+
+  '<div class="card"><h2>Agregar preguntas a mano</h2><div class="sub">Arreglo JSON (c = 0 para A, 1 para B, 2 para C, 3 para D).</div><textarea id="imp" placeholder=\'[{"b":"A","q":"Pregunta","o":["a","b","c","d"],"c":1,"e":"Explicación"}]\'></textarea><div class="row"><button onclick="imp()">Importar</button><button onclick="clr()">Borrar agregadas y errores</button></div><div id="msg" class="sub"></div></div>';
+}
+function scrIA(){
+  app.innerHTML='<div class="card"><h2>Generador de preguntas con IA (Groq)</h2><div class="sub">La IA redacta con fuente y una segunda pasada las responde a ciegas; las dudosas se descartan. Banco actual: <b id="bn">'+bank().length+'</b>.</div>'+
+  '<label>Clave API de Groq <a href="https://console.groq.com/keys" target="_blank" rel="noopener">(obtener gratis)</a><input type="password" id="g_key" autocomplete="off" placeholder="gsk_…" value="'+esc(KEY)+'" onchange="saveCfg();testConn()"></label>'+
+  '<div class="row"><button id="g_test" onclick="testConn()">Probar conexión</button><span id="g_conn" class="sub" role="status" style="align-self:center;margin:0"></span></div>'+
+  '<label class="chk"><input type="checkbox" id="g_rem" '+(CFG.remember?'checked':'')+' onchange="saveCfg()"> Recordar la clave en este dispositivo</label>'+
+  '<div class="row f"><label>Modelo generador<input type="text" id="g_model" list="mlist" value="'+esc(CFG.model)+'" onchange="saveCfg()"></label><label>Modelo verificador<input type="text" id="g_vmodel" list="mlist" value="'+esc(CFG.vmodel)+'" onchange="saveCfg()"></label></div><datalist id="mlist"></datalist>'+
+  '<div class="row f"><label>Norma<select id="g_norma" onchange="normaSel()"><option value="-1">Todo el bloque (la IA elige)</option>'+NORMAS.map(function(x,i){return '<option value="'+i+'">'+esc(x.n)+'</option>'}).join('')+'</select></label>'+
+  '<label>Bloque<select id="g_b"><option value="*">Todos (rotar A–E)</option>'+Object.keys(BLOQUES).map(function(k){return '<option value="'+k+'">'+k+'. '+esc(BLOQUES[k])+'</option>'}).join('')+'</select></label>'+
+  '<label>Por tanda<select id="g_n"><option>5</option><option selected>10</option><option>15</option></select></label></div>'+
+  '<label>Tema específico (opcional)<input type="text" id="g_tema" placeholder="Ej.: prohibiciones éticas, control difuso…"></label><div id="g_link" class="sub"></div>'+
+  '<div class="row f"><button class="p" id="g_go" onclick="gen(false)">Generar tanda</button><button class="c" id="g_cont" onclick="gen(true)">Continua (sin límite)</button><button id="g_stop" onclick="stopGen()" hidden>Detener</button></div><div id="g_msg" class="sub" role="status"></div>'+
+  '<div class="warn">Tu clave se guarda solo en este dispositivo y solo se envía a api.groq.com. La IA cita la fuente de memoria (no abre El Peruano): confirma con el enlace de cada pregunta.</div></div>';
+  genUI();var m=document.getElementById("g_msg");if(m&&LASTMSG)m.textContent=LASTMSG;if(KEY)testConn();
+}
+
+// ---------- Entrevista de trabajo ----------
+var IT=null;
+var TIPOS={conductual:"conductuales (método STAR: situación, tarea, acción, resultado)",tecnica:"técnicas del puesto de Asistente de Custodia de Expedientes y grabación de audiencias (custodia, registro, trazabilidad, préstamos, copias de seguridad, atención a usuarios)",situacional:"situacionales (casos hipotéticos del día a día en un juzgado, dilemas éticos y de reserva de información)",motivacion:"de motivación, ética de la función pública y trabajo en equipo"};
+var FAQ=[
+["Cuéntame sobre ti y por qué quieres este puesto.","Estructura presente–pasado–futuro: tu formación o experiencia afín (archivo, atención al público, ofimática), un logro concreto, y por qué el Poder Judicial: servicio, orden y responsabilidad. Cierra con lo que aportarás."],
+["¿Qué harías si un abogado pide un expediente sin haber acreditado su condición?","Primero identificar y verificar su legitimación según el procedimiento; atender con amabilidad, registrar la consulta y no entregar nada sin control. Si no corresponde, orientarlo con respeto."],
+["¿Cómo garantizas la reserva de la información de los expedientes?","Acceso solo a quien corresponde, no comentar casos, cerrar sesión, no compartir claves, no dejar documentos a la vista. Menciona la Ley 27815 (discreción) y la Ley 29733 (datos personales)."],
+["Cuéntame de una vez que cometiste un error en el trabajo.","Usa STAR: el error real y pequeño, cómo lo advertiste, cómo lo corregiste y comunicaste, y qué cambiaste para que no se repita (por ejemplo, una lista de verificación)."],
+["Un juez pide un CD que figura prestado a otro servidor. ¿Qué haces?","Revisar el registro de préstamos, ubicar al responsable, gestionar la devolución o una copia de seguridad y dejar constancia. Se destaca la trazabilidad."],
+["¿Cómo manejas la presión cuando hay muchos usuarios y poco tiempo?","Priorizar por urgencia, mantener el orden y el trato respetuoso, no saltarte registros de control y pedir apoyo al jefe inmediato si hace falta."],
+["¿Dónde te ves en cinco años?","Crecer en la carrera judicial o administrativa, capacitarte (ofimática, gestión documental) y aportar a la mejora del servicio. Evita respuestas ajenas a la institución."]];
+function scrInt(){
+  var h='<div class="card"><h2>Entrevista de trabajo con IA</h2><div class="sub">La IA hace de entrevistador del Poder Judicial, evalúa cada respuesta (0–10) y te muestra una respuesta modelo. Puedes escribir o dictar con el micrófono.</div>'+
+  '<div class="row f"><label>Tipo<select id="it_t"><option value="conductual">Conductuales (STAR)</option><option value="tecnica">Técnicas del puesto</option><option value="situacional">Situacionales</option><option value="motivacion">Motivación y ética</option></select></label><label>Preguntas<select id="it_n"><option>3</option><option selected>5</option><option>8</option></select></label></div>'+
+  '<div class="row"><button class="p" onclick="itStart()">Empezar entrevista</button></div>'+(KEY?'':'<div class="warn">Necesitas tu clave de Groq (pestaña IA). Mientras tanto, practica con las preguntas frecuentes de abajo.</div>')+'</div>';
+  if(INTH.length)h+='<div class="card"><h2>Mis entrevistas</h2><div class="sub" style="margin:0">'+INTH.slice(-4).reverse().map(function(x){return x.f+' · '+x.t+' · promedio '+x.avg+'/10 ('+x.n+' preguntas)'}).join('<br>')+'</div></div>';
+  h+='<div class="card"><h2>Preguntas frecuentes y cómo responderlas</h2>'+FAQ.map(function(f){return '<details><summary>'+esc(f[0])+'</summary><div class="exp">'+esc(f[1])+'</div></details>'}).join("")+'</div>';
+  app.innerHTML=h;
+}
+function itStart(){
+  saveCfg();if(!KEY){tab("ia");setStatus("Pega tu clave de Groq para usar la entrevista.");return}
+  IT={t:val("it_t")||"conductual",n:+val("it_n")||5,i:0,qs:[],cur:"",fb:null,sc:[],busy:false,err:""};itNext();
+}
+async function itNext(){
+  IT.cur="";IT.fb=null;IT.err="";IT.busy=true;itRender();
+  try{
+    var raw=await groq(CFG.model,[{role:"system",content:"Eres un entrevistador de recursos humanos del Poder Judicial del Perú que evalúa postulantes a Asistente Jurisdiccional de Custodia de Expedientes (Módulo Corporativo Laboral). Respondes solo con JSON válido."},{role:"user",content:"Formula UNA pregunta de entrevista de tipo "+TIPOS[IT.t]+". Debe ser clara y realista, de una o dos oraciones."+(IT.qs.length?" No repitas estas: "+IT.qs.join(" | "):"")+'\nFormato: {"pregunta":"..."}'}],{t:0.9});
+    var o=parseObj(raw);if(!o||!o.pregunta)throw new Error("fmt");
+    IT.cur=String(o.pregunta);IT.qs.push(IT.cur);
+  }catch(e){IT.err=e.message==="fmt"?"La IA no devolvió una pregunta válida. Intenta de nuevo.":errMsg(e)}
+  IT.busy=false;itRender();
+}
+async function itEval(){
+  var a=val("it_a");if(a.length<20){IT.err="Escribe una respuesta un poco más completa (mínimo 20 caracteres).";itRender();return}
+  IT.busy=true;IT.err="";IT.ans=a;itRender();
+  try{
+    var raw=await groq(CFG.model,[{role:"system",content:"Eres un evaluador de entrevistas del Poder Judicial del Perú, exigente pero constructivo. Respondes solo con JSON válido y en español."},{role:"user",content:"Pregunta: "+IT.cur+"\nRespuesta del postulante: "+a+'\nEvalúa de 0 a 10 considerando claridad, pertinencia al puesto, ejemplos concretos, ética y reserva. Formato: {"puntaje":7,"fortalezas":["..."],"mejoras":["..."],"respuesta_modelo":"ejemplo breve en primera persona (4 a 6 frases)"}'}],{t:0.3});
+    var o=parseObj(raw);if(!o||typeof +o.puntaje!=="number"||isNaN(+o.puntaje))throw new Error("fmt");
+    IT.fb=o;IT.sc.push(Math.max(0,Math.min(10,+o.puntaje)));
+  }catch(e){IT.err=e.message==="fmt"?"La IA no devolvió una evaluación válida. Pulsa Evaluar otra vez.":errMsg(e)}
+  IT.busy=false;itRender();
+}
+function li(a){return (Array.isArray(a)?a:[]).map(function(x){return '<li>'+esc(x)+'</li>'}).join("")}
+function itRender(){
+  var s=IT,h='<div class="card"><div class="meta"><span>Pregunta '+Math.min(s.i+1,s.n)+' de '+s.n+'</span><span class="tag">'+esc(s.t)+'</span></div><div class="bar"><i style="width:'+Math.round(s.i/s.n*100)+'%"></i></div>';
+  if(s.i>=s.n){
+    var avg=(s.sc.reduce(function(a,b){return a+b},0)/(s.sc.length||1)).toFixed(1);
+    h+='<div class="big">'+avg+' / 10</div><div class="sub">Promedio de tu entrevista ('+s.sc.length+' respuestas evaluadas).</div><div class="row"><button class="p" onclick="itStart()">Otra entrevista</button><button onclick="tab(\'entrevista\')">Salir</button></div></div>';
+    if(!s.saved){s.saved=1;INTH.push({f:new Date().toLocaleDateString("es-PE"),t:s.t,avg:avg,n:s.sc.length});sv("cust_int",INTH)}
+    app.innerHTML=h;return;
+  }
+  if(s.busy&&!s.cur)h+='<p class="sub">El entrevistador está preparando la pregunta…</p>';
+  else if(s.cur){
+    h+='<p><b>'+esc(s.cur)+'</b></p><div class="row"><button onclick="itSay()">🔊 Escuchar</button></div>';
+    if(!s.fb){h+='<textarea id="it_a" placeholder="Escribe tu respuesta o dicta con el micrófono…" style="font-family:inherit;font-size:15px">'+esc(s.ans||"")+'</textarea><div class="row"><button onclick="itMic()">🎤 Dictar</button><button class="p" onclick="itEval()" '+(s.busy?'disabled':'')+'>'+(s.busy?'Evaluando…':'Evaluar respuesta')+'</button></div>'}
+    else{var f=s.fb;h+='<div class="exp"><b>Tu respuesta:</b> '+esc(s.ans)+'</div><div class="big">'+esc(String(f.puntaje))+' / 10</div><div class="exp"><b>Fortalezas</b><ul>'+li(f.fortalezas)+'</ul><b>A mejorar</b><ul>'+li(f.mejoras)+'</ul><b>Respuesta modelo</b><br>'+esc(f.respuesta_modelo||"")+'</div><div class="row"><button class="p" onclick="IT.i++;IT.ans=\'\';IT.i>=IT.n?itRender():itNext()">'+(s.i+1>=s.n?'Ver resultado':'Siguiente pregunta')+'</button></div>'}
+  }
+  if(s.err)h+='<div class="warn">'+esc(s.err)+'</div>'+(!s.cur&&!s.busy?'<div class="row"><button onclick="itNext()">Reintentar</button><button onclick="tab(\'entrevista\')">Salir</button></div>':'');
+  app.innerHTML=h+'</div>';
+}
+function itSay(){try{var u=new SpeechSynthesisUtterance(IT.cur);u.lang="es-PE";speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function itMic(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition,a=document.getElementById("it_a");
+  if(!SR){IT.err="Tu navegador no permite dictado. Escribe tu respuesta.";itRender();return}
+  var r=new SR();r.lang="es-PE";r.interimResults=false;
+  r.onresult=function(e){a.value=(a.value+" "+e.results[0][0].transcript).trim()};
+  r.onerror=function(){};try{r.start()}catch(e){}
+}
+document.getElementById("nav").addEventListener("click",function(e){var b=e.target.closest("button");if(b)tab(b.dataset.t)});
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0)navigator.serviceWorker.register("/sw.js").catch(function(){});
+home();
+
+</script></body></html>
