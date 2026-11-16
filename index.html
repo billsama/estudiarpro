@@ -384,7 +384,8 @@ function prefetch(){
   var s=S;
   if(!s||s.mode!=="inf"||!KEY||s.fetching)return null;
   var b=s.blq||"ABCDE"[Math.floor(Math.random()*5)];
-  var p=genBatch(b,null,"",5,null).then(function(r){
+  var pool=SRCS.filter(function(x){return !s.blq||x.b===s.blq}),sr=pool.length?pool[Math.floor(Math.random()*pool.length)]:null;
+  var p=(sr?genBatchSrc(sr,s.blq||sr.b||"C","",5,null):genBatch(b,null,"",5,null)).then(function(r){
     r.ok.forEach(function(q){s.qs.push(mk(q))});
     s.err=r.ok.length?"":"La IA no devolvió preguntas válidas esta vez.";
   }).catch(function(e){s.err=errMsg(e)}).then(function(){s.fetching=null});
@@ -525,7 +526,8 @@ function scrIA(){
 // ---------- Fuentes oficiales y material propio ----------
 var SRCS=[];
 function srcCards(){
-  return '<div class="card"><h2>Fuente oficial (automática)</h2><div class="sub">El servidor descarga la norma desde un sitio del Estado (gob.pe, elperuano.pe) y la IA redacta preguntas solo con ese texto. Cada pregunta trae una cita literal que el sistema comprueba: si la cita no está en la norma, se descarta.</div>'+
+  return '<div class="card"><button class="p" style="width:100%" onclick="autoOficial()">Generar preguntas nuevas desde fuentes oficiales</button><div id="a_msg" class="sub" style="margin:8px 0 0">Un toque: descarga las normas oficiales desde internet y genera preguntas nuevas solo con su texto, sin usar tus exámenes anteriores. Se repite sin límite hasta que pulses Detener. Necesita tu clave de Groq.</div></div>'+
+  '<div class="card"><h2>Fuente oficial (automática)</h2><div class="sub">El servidor descarga la norma desde un sitio del Estado (gob.pe, elperuano.pe) y la IA redacta preguntas solo con ese texto. Cada pregunta trae una cita literal que el sistema comprueba: si la cita no está en la norma, se descarta.</div>'+
   '<label>Norma<select id="o_norma"><option value="-1">Elige la norma…</option>'+NORMAS.map(function(x,i){return '<option value="'+i+'">'+esc(x.n)+(x.u?'':' (sin enlace: pega uno)')+'</option>'}).join('')+'</select></label>'+
   '<label>O pega un enlace oficial<input type="url" id="o_url" placeholder="https://www.gob.pe/… o https://spij…gob.pe/…"></label>'+
   '<div class="row"><button class="c" id="o_go" onclick="loadOfficial()">Descargar y leer fuente</button><button onclick="loadAll()">Cargar todas las normas con enlace</button></div><div id="o_msg" class="sub" role="status"></div></div>'+
@@ -552,6 +554,18 @@ function refreshSrc(){
   var t=document.getElementById("it_src");if(t){var w=t.value;t.innerHTML='<option value="">Sin material</option>'+SRCS.map(function(x,i){return '<option value="'+i+'">'+esc(x.name)+'</option>'}).join("");t.value=w}
 }
 function delSrc(i){SRCS.splice(i,1);refreshSrc()}
+async function autoOficial(){
+  var a=document.getElementById("a_msg");
+  saveCfg();
+  if(!KEY){a.textContent="Primero pega tu clave de Groq (abajo, en el generador) y pulsa «Probar conexión».";return}
+  if(GEN.run){a.textContent="Ya se está generando. Pulsa Detener para parar.";return}
+  if(!SRCS.length)await loadAll();
+  if(!SRCS.length){a.textContent="No pude descargar ninguna norma. Esto solo funciona en el sitio publicado en Vercel; también puedes subir tu material.";return}
+  var g=document.getElementById("g_src");g.value=SRCS.length>1?"all":"0";
+  document.getElementById("g_b").value="*";document.getElementById("g_tema").value="";
+  a.textContent="Generando preguntas nuevas de "+SRCS.length+" fuente(s) oficial(es)… avance abajo, en el generador.";
+  gen(true);
+}
 async function loadAll(){
   var m=document.getElementById("o_msg");
   if(location.protocol==="file:"){m.textContent="Esta función solo funciona en el sitio publicado en Vercel.";return}
