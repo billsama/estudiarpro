@@ -1,1 +1,1 @@
-{"cleanUrls":true,"headers":[{"source":"/sw.js","headers":[{"key":"Cache-Control","value":"no-cache"}]}]}
+{"cleanUrls":true,"functions":{"api/fuente.js":{"maxDuration":30}},"headers":[{"source":"/sw.js","headers":[{"key":"Cache-Control","value":"no-cache"}]}]}
