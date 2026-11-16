@@ -372,10 +372,13 @@ function start(mode){
   var blq=(document.getElementById("blq")||{}).value||"";
   var pool=bank();
   if(blq)pool=pool.filter(function(q){return q.b===blq});
+  var org=(document.getElementById("org")||{}).value||ORG;
+  if(org==="new")pool=pool.filter(function(q){return q.gen});else if(org==="old")pool=pool.filter(function(q){return !q.gen});
   if(mode==="err")pool=bank().filter(function(q){return ERR[key(q)]});
-  if(!pool.length){alert("No hay preguntas para esa selección.");return}
+  if(!pool.length){if(org==="new"&&mode!=="err"){alert("Aún no tienes preguntas nuevas"+(blq?" en ese bloque":"")+". Te llevo a IA para generarlas desde fuentes oficiales.");tab("ia");return}alert("No hay preguntas para esa selección.");return}
   if(mode==="inf"&&!KEY&&!confirm("No hay clave de Groq guardada: la práctica ilimitada solo usará el banco actual y terminará al acabarse. ¿Continuar?"))return;
   pool=shuffle(pool);
+  pool.sort(function(a,b){return (SEEN[key(a)]?1:0)-(SEEN[key(b)]?1:0)});
   if(mode==="exam")pool=pool.slice(0,30);
   S={mode:mode,qs:pool.map(mk),i:0,t0:Date.now(),done:false,blq:blq,fetching:null,wait:false,err:""};
   render();
@@ -418,7 +421,7 @@ function tick(){
   var t=Math.floor((Date.now()-S.t0)/1000);c.textContent=("0"+Math.floor(t/60)).slice(-2)+":"+("0"+t%60).slice(-2);
   clearTimeout(S.tm);S.tm=setTimeout(tick,1000);
 }
-function pick(pos){var it=S.qs[S.i];if(S.mode!=="exam"&&it.sel!==null)return;it.sel=pos;render()}
+function pick(pos){var it=S.qs[S.i];if(S.mode!=="exam"&&it.sel!==null)return;it.sel=pos;SEEN[key(it.q)]=1;sv("cust_seen",SEEN);render()}
 async function nav(d){
   var s=S;
   if(d>0&&s.mode==="inf"&&s.i>=s.qs.length-1){
@@ -464,7 +467,7 @@ function finish(){
   h+='</div>';app.innerHTML=h;window.scrollTo(0,0);
 }
 // ================= NUEVA INTERFAZ (dashboard, pestañas, entrevista) =================
-var STATS=ld("cust_stats",{}),INTH=ld("cust_int",[]),TAB="home",UID=0;
+var SEEN=ld("cust_seen",{}),ORG=ld("cust_org","new"),STATS=ld("cust_stats",{}),INTH=ld("cust_int",[]),TAB="home",UID=0;
 function home(){tab("home")}
 function tab(t){
   TAB=t;if(S){clearTimeout(S.tm);S=null}
@@ -492,7 +495,7 @@ function scrHome(){
   var tn=0,tk=0;Object.keys(STATS).forEach(function(k){tn+=STATS[k].n;tk+=STATS[k].ok});
   var prec=tn?tk/tn*100:0,apr=HIST.length?HIST.filter(function(x){return x.ap}).length/HIST.length*100:0;
   var h='<div class="top"><div class="logo">C</div><div><h1>Custodia de Expedientes</h1><small>CSJ Lima Norte · Proceso 002-2026 · Cód. 00414_1</small></div></div>'+
-  '<div class="grid"><div class="stat"><b>'+bank().length+'</b><span>Preguntas en banco</span></div><div class="stat"><b>'+tn+'</b><span>Respondidas</span></div><div class="stat"><b>'+INTH.length+'</b><span>Entrevistas</span></div></div>'+
+  '<div class="grid"><div class="stat"><b>'+bank().filter(function(q){return q.gen}).length+'</b><span>Preguntas nuevas</span></div><div class="stat"><b>'+tn+'</b><span>Respondidas</span></div><div class="stat"><b>'+INTH.length+'</b><span>Entrevistas</span></div></div>'+
   '<div class="card"><div class="g2">'+gauge(prec,"#ff3d71","#c2185b","Precisión global")+gauge(apr,"#7b5cff","#00d4ff","Simulacros aprobados")+'</div></div>'+
   '<div class="card"><h2>Progreso en simulacros</h2>'+area(HIST.slice(-10).map(function(x){return +x.v}))+'</div>'+
   '<div class="card"><h2>Dominio por bloque</h2>'+Object.keys(BLOQUES).map(function(k){var s=STATS[k],p=s&&s.n?Math.round(s.ok/s.n*100):0;return '<div class="pb"><em>'+k+'. '+esc(BLOQUES[k].split(" ")[0])+'</em><div class="bar"><i style="width:'+p+'%"></i></div><b>'+(s&&s.n?p+'%':'—')+'</b></div>'}).join("")+'<div class="sub" style="margin:4px 0 0">Aprobar requiere 20 de 30 (13/20).</div></div>'+
@@ -503,6 +506,7 @@ function scrHome(){
 function scrPractica(){
   var ne=Object.keys(ERR).length;
   app.innerHTML='<div class="card"><h2>Practicar</h2><div class="sub">Examen: 30 preguntas, 1 punto c/u sin puntos en contra, escala vigesimal. Mínimo 13/20 (20 de 30).</div>'+
+  '<label>Origen de las preguntas<select id="org" onchange="ORG=this.value;sv(\'cust_org\',ORG)"><option value="new"'+(ORG==="new"?" selected":"")+'>Solo nuevas (de fuentes oficiales / IA): '+bank().filter(function(q){return q.gen}).length+'</option><option value="all"'+(ORG==="all"?" selected":"")+'>Todas (incluye mis exámenes anteriores)</option><option value="old"'+(ORG==="old"?" selected":"")+'>Solo banco base y exámenes anteriores</option></select></label>'+
   '<label>Bloque<select id="blq"><option value="">Todos</option>'+Object.keys(BLOQUES).map(function(k){return '<option value="'+k+'">'+k+'. '+BLOQUES[k]+'</option>'}).join('')+'</select></label>'+
   '<div class="row f"><button class="p" onclick="start(\'exam\')">Simulacro (30)</button><button onclick="start(\'prac\')">Práctica con explicación</button><button class="c" onclick="start(\'inf\')">Ilimitada con IA</button><button onclick="start(\'err\')" '+(ne?'':'disabled')+'>Mis errores ('+ne+')</button></div></div>'+
   '<div class="card"><h2>Agregar preguntas a mano</h2><div class="sub">Arreglo JSON (c = 0 para A, 1 para B, 2 para C, 3 para D).</div><textarea id="imp" placeholder=\'[{"b":"A","q":"Pregunta","o":["a","b","c","d"],"c":1,"e":"Explicación"}]\'></textarea><div class="row"><button onclick="imp()">Importar</button><button onclick="clr()">Borrar agregadas y errores</button></div><div id="msg" class="sub"></div></div>';
